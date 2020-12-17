@@ -1,0 +1,21 @@
+def lastMonthbillForSubscription(subscriptionID,subscriptionName,access_token_management):
+    #access_token_management can be obtained by oauth client_credentails flow. Permission are based on your requirements
+    mainPayload = {}
+    datasetPayload = {}
+    aggregationPaload = {}
+    costPayload = {}
+    costPayload = {"type": "ActualCost","timeframe": "TheLastMonth","dataset": {"granularity": "None","aggregation": {"totalCost": {"name": "PreTaxCost","function": "Sum"}}}}
+    costUrl = "https://management.azure.com/subscriptions/"+subscriptionID+"/providers/Microsoft.CostManagement/query"
+    querystring = {"api-version":"2019-11-01"}
+    costPayload = json.dumps(costPayload)
+    #print(costPayload)
+    costHeaders = {'Authorization': "Bearer "+access_token_management,'Content-Type':'application/json'}
+    response_cost = requests.request("POST", costUrl, data=costPayload, headers=costHeaders, params=querystring)
+    response = json.loads(response_cost.text)
+    lastMonthBill = response.get('properties', {}).get('rows', None)
+    print(lastMonthBill)
+    if (len(lastMonthBill) == 0):
+        lastMonthBill =  0
+    else:
+        lastMonthBill =  lastMonthBill[0][0]
+    return lastMonthBill
